@@ -5,3 +5,5 @@ const route = express.Router();
 
 
 route.get("/facilities",GetFacilities);
+
+export default route;
