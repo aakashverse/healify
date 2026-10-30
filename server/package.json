@@ -1,12 +1,14 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Heal-U Express Backend API",
   "license": "ISC",
-  "author": "",
+  "author": "akash",
   "type": "module",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

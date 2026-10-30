@@ -4,23 +4,20 @@ from pydantic import BaseModel
 from app.services.safety import check_red_flag, get_first_aid
 from app.services.llm import response
 
-# chat route
+
 router = APIRouter(prefix="/user", tags=["chat"])
 
 class ChatRequest(BaseModel):
     message: str
 
-# checks if text's lang is hindi
 def is_hindi_text(text: str) -> bool:
     return bool(re.search(r"[\u0900-\u097F]", text))
 
-# chat route before RAG
 @router.post("/chat")
 def triage_chat(req: ChatRequest):
     flag = check_red_flag(req.message)
     hindi = is_hindi_text(req.message) or any(w in req.message.lower() for w in ["dard", "bukhar", "saans", "khoon", "saanp", "hai"])
 
-    # emergency red flag triggered
     if flag:
         return {
             "mode": "sos",

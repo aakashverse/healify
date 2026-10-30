@@ -15,7 +15,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 class ExplainRequest(BaseModel):
     image_base64: Optional[str] = None
-    mime_type: Optional[str] = "image/jpeg"
+    mime_type: Optional[str] = "image/jpeg/pdf"
     file_name: Optional[str] = ""
 
 # analyzes prescription from base64 json payload
@@ -41,7 +41,6 @@ async def upload_prescription_file(file: UploadFile = File(...)):
     if not contents:
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
 
-    # save copy to uploads folder with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     clean_name = f"{timestamp}_{file.filename}"
     saved_path = UPLOAD_DIR / clean_name

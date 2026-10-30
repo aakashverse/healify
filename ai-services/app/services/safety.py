@@ -1,4 +1,4 @@
-# emergency red flag keywords in english and hindi
+# emergency keywords
 RED_FLAGS = {
     "cardiac":   ["chest pain", "seene mein dard", "सीने में दर्द", "heart attack", "दिल का दौरा", "chest pressure", "chhathi me dard"],
     "breathing": ["can't breathe", "cannot breathe", "saans nahi", "सांस नहीं", "सांस फूल", "difficulty breathing", "दम घुट"],
@@ -7,7 +7,7 @@ RED_FLAGS = {
     "maternal":  ["pregnant", "garbhwati", "गर्भवती", "प्रसव", "delivery pain", "garbh me dard", "water broke"],
 }
 
-# immediate life-saving first-aid guidelines
+# immediate first-aid guidelines
 FIRST_AID = {
     "snakebite": {
         "en": "Keep the person completely calm and still. Do NOT cut the wound or suck the venom. Immobilize the limb and rush to the nearest PHC/hospital immediately for anti-venom.",
@@ -39,7 +39,7 @@ def check_red_flag(text: str):
             return category
     return None
 
-# returns first-aid instructions based on language
+
 def get_first_aid(category: str, is_hindi: bool = False):
     info = FIRST_AID.get(category, {
         "en": "Please seek emergency medical attention immediately at your nearest health center.",
