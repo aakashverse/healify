@@ -1,10 +1,29 @@
-# emergency keywords
+# Evident life-threatening emergency keywords (strictly acute emergency scenarios)
 RED_FLAGS = {
-    "cardiac":   ["chest pain", "seene mein dard", "सीने में दर्द", "heart attack", "दिल का दौरा", "chest pressure", "chhathi me dard"],
-    "breathing": ["can't breathe", "cannot breathe", "saans nahi", "सांस नहीं", "सांस फूल", "difficulty breathing", "दम घुट"],
-    "bleeding":  ["heavy bleeding", "bahut khoon", "खून बहुत", "रक्तस्राव", "severe bleeding", "khoon beh raha"],
-    "snakebite": ["snake", "saanp", "सांप", "साँप", "snake bite", "saanp ne kata"],
-    "maternal":  ["pregnant", "garbhwati", "गर्भवती", "प्रसव", "delivery pain", "garbh me dard", "water broke"],
+    "cardiac": [
+        "heart attack", "दिल का दौरा", "dil ka daura", "cardiac arrest",
+        "severe chest pain", "seene mein tez dard", "seene me tez dard", "सीने में तेज दर्द",
+        "seene par dabav", "chest clutching", "left arm pain radiating to chest", "chhathi me tez dard"
+    ],
+    "breathing": [
+        "can't breathe", "cannot breathe", "unable to breathe",
+        "saans nahi aa rahi", "saans nahi aa raha", "सांस नहीं आ रही", "दम घुट रहा", "dam ghut",
+        "severe breathlessness", "gasping for air", "lips turning blue", "choking"
+    ],
+    "bleeding": [
+        "heavy bleeding", "severe bleeding", "uncontrolled bleeding",
+        "khoon beh raha hai aur ruk nahi raha", "bahut zyada khoon beh",
+        "रक्तस्राव नहीं रुक रहा", "vomiting blood", "khoon ki ulti"
+    ],
+    "snakebite": [
+        "snake bite", "snakebite", "saanp ne kaat", "saanp ne das",
+        "सांप ने काट", "साँप ने काट", "सांप का काटना", "bitten by snake", "poisonous snake bite"
+    ],
+    "maternal": [
+        "active labor", "water broke", "delivery pain", "labor pain",
+        "prasav dard", "प्रसव पीड़ा", "pregnancy heavy bleeding",
+        "garbhwati bleeding", "amniotic fluid", "garbh me tez asahniya dard"
+    ],
 }
 
 # immediate first-aid guidelines

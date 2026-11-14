@@ -1,206 +1,204 @@
 import re
+import logging
 from app.core.config import settings
 from app.services.rag import get_langchain_docs
 
+logger = logging.getLogger(__name__)
+
 def is_hindi(text: str) -> bool:
-    return bool(re.search(r"[\u0900-\u097F]", text))
-
-def format_docs(docs):
-    return "\n\n".join(f"[{i+1}] ({d.metadata.get('source', 'Clinical Guideline')}):\n{d.page_content}" for i, d in enumerate(docs))
-
-# fallback
-def offline_answer(query: str, docs: list) -> str:
-    primary_doc = docs[0] if docs else None
-    category = primary_doc.metadata.get("category", "") if primary_doc else ""
-    primary_content = primary_doc.page_content if primary_doc else ""
-    
-    hindi = is_hindi(query) or any(w in query.lower() for w in [
-        "dard", "bukhar", "dast", "ulti", "kya", "hai", "kaise", "khasi", "kamzori", "saanp", "chot", "ghav"
+    return bool(re.search(r"[\u0900-\u097F]", text)) or any(w in text.lower() for w in [
+        "dard", "bukhar", "dast", "ulti", "kya", "hai", "kaise", "khasi", "kamzori", "chot", "ghav", "mujhe", "mera"
     ])
 
-    # 1. Fever / Malaria / Dengue
-    if category == "fever" or "Fever" in primary_content or "बुखार" in primary_content:
-        if hindi:
-            return (
-                "1. मरीज को हवादार और ठंडी जगह पर रखें। माथे, हाथ और पैरों पर सादे सामान्य पानी की पट्टी रखें (बर्फ का पानी न लगाएं)।\n"
-                "2. शरीर में पानी की कमी न होने दें—खूब पानी, दाल का पानी, नींबू पानी या ओआरएस (ORS) पिलाएं।\n"
-                "3. तेज बुखार के लिए डॉक्टर की सलाह से पैरासिटामोल (PCM) दी जा सकती है। बिना जांच एस्पिरिन या ब्रूफेन न लें।\n"
-                "4. यदि बुखार 48 घंटे से अधिक रहे या तेज कंपकंपी/जाड़ा लगे, तो मलेरिया या डेंगू की जांच के लिए तुरंत नजदीकी प्राथमिक स्वास्थ्य केंद्र (PHC) जाएं।"
-            )
-        return (
-            "1. Rest in a well-ventilated, cool room. Apply normal room-temperature water sponges to forehead and body (avoid cold or ice water).\n"
-            "2. Keep well hydrated with plenty of fluids such as boiled water, lemon water, thin lentils (dal), or ORS.\n"
-            "3. Paracetamol can help reduce fever under appropriate guidance. Avoid Aspirin or Ibuprofen without testing as Dengue risk may increase.\n"
-            "4. If fever persists beyond 48 hours or is accompanied by intense shivering or chills, visit the nearest Primary Health Centre (PHC) for malaria/dengue blood screening."
-        )
+def format_docs(docs):
+    if not docs:
+        return ""
+    return "\n\n".join(f"[{i+1}] ({d.metadata.get('source', 'Clinical Reference')}):\n{d.page_content}" for i, d in enumerate(docs))
 
-    # 2. Diarrhea / Dehydration / ORS
-    elif category == "dehydration" or "Diarrhea" in primary_content or "दस्त" in primary_content:
-        if hindi:
-            return (
-                "1. एक पैकेट ओआरएस (ORS) को ठीक 1 लीटर साफ उबले हुए ठंडे पानी में घोलें और हर बार दस्त के बाद घूंट-घूंट पिएं।\n"
-                "2. यदि ओआरएस पैकेट न हो, तो घर पर 1 लीटर पानी में 6 छोटी चम्मच चीनी और आधा चम्मच नमक मिलाकर घोल तैयार करें।\n"
-                "3. हल्का व सुपाच्य भोजन (खिचड़ी, नारियल पानी, चावल का पानी) जारी रखें।\n"
-                "4. यदि उल्टी-दस्त 24-48 घंटे से ज्यादा रहे, पेशाब बंद हो या अत्यधिक कमजोरी हो, तो तुरंत नजदीकी PHC जाएं।"
-            )
-        return (
-            "1. Dissolve 1 sachet of ORS in exactly 1 liter of clean, boiled and cooled drinking water. Sip regularly, especially after each loose stool.\n"
-            "2. If ORS sachets are unavailable, mix 6 level teaspoons of sugar and half a teaspoon of salt into 1 liter of clean water.\n"
-            "3. Continue light home-cooked meals such as rice water, khichdi, or tender coconut water to prevent weakness.\n"
-            "4. If diarrhea persists beyond 48 hours, or if there is severe drowsiness or blood in stool, visit the nearest Primary Health Centre (PHC) immediately."
-        )
+def extract_text_from_ai_message(content) -> str:
+    """Safely extracts plain text from AIMessage.content whether str, list of dicts, or TextAccessor."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for part in content:
+            if isinstance(part, str):
+                parts.append(part)
+            elif isinstance(part, dict) and "text" in part:
+                val = part.get("text")
+                if val:
+                    parts.append(str(val))
+            elif hasattr(part, "text"):
+                val = getattr(part, "text")
+                if val:
+                    parts.append(str(val))
+        return "".join(parts)
+    return str(content) if content is not None else ""
 
-    # 3. Respiratory / Cough / Cold / Pneumonia
-    elif category == "respiratory" or "Cough" in primary_content or "खांसी" in primary_content:
-        if hindi:
-            return (
-                "1. सीने और गले को गर्म रखें। गुनगुना पानी, अदरक-तुलसी की चाय या गर्म सूप पिएं।\n"
-                "2. बंद नाक के लिए सादे गुनगुने नमक-पानी की भाप लें या सेलाइन नेजल ड्रॉप्स का उपयोग करें।\n"
-                "3. बच्चों में ध्यान दें: यदि सांस बहुत तेज चल रही हो या सांस लेते समय पसली अंदर धंस रही हो, तो यह निमोनिया का संकेत हो सकता है।\n"
-                "4. खांसी 5 दिन से ज्यादा रहे या सांस फूलने लगे तो बिना देरी किए नजदीकी स्वास्थ्य केंद्र (PHC/CHC) जाकर जांच कराएं।"
-            )
-        return (
-            "1. Keep chest warm and drink soothing warm fluids like ginger tea, warm water, or light broth.\n"
-            "2. Inhale plain warm steam to loosen phlegm and clear nasal congestion.\n"
-            "3. For young children, watch for danger signs: fast breathing or chest indrawing (sucking inward) which indicates acute pneumonia.\n"
-            "4. If cough lasts over 5 days, produces dark phlegm, or is accompanied by breathlessness, visit the nearest PHC/CHC promptly."
-        )
+def is_network_offline_error(err: Exception) -> bool:
+    msg = str(err).lower()
+    return any(k in msg for k in [
+        "getaddrinfo failed", "connecterror", "connection error", "connection refused",
+        "name resolution", "no internet", "network is unreachable"
+    ])
 
-    # 4. Maternal Care / Pregnancy
-    elif category == "maternal" or "Maternal" in primary_content or "गर्भावस्था" in primary_content:
-        if hindi:
-            return (
-                "1. गर्भावस्था के दौरान नजदीकी उप-स्वास्थ्य केंद्र या PHC पर कम से कम 4 नियमित जांच (ANC) अवश्य कराएं।\n"
-                "2. रोज आयरन-फोलिक एसिड (IFA) की गोली लें और हरी पत्तेदार सब्जियां, गुड़, चना, दालें व फल खाएं।\n"
-                "3. गर्भावस्था में दो टिटनेस (TT) के टीके समय पर लगवाएं और भारी वजन उठाने से बचें।\n"
-                "4. चेतावनी: यदि तेज पेट दर्द, चक्कर, आंखों में धुंधलापन या रक्तस्राव (bleeding) हो, तो तुरंत 102/108 एम्बुलेंस बुलाकर अस्पताल जाएं।"
-            )
-        return (
-            "1. Ensure at least 4 routine Antenatal Checkups (ANC) are completed at your nearest Sub-Centre or PHC.\n"
-            "2. Take daily Iron-Folic Acid (IFA) tablets and consume iron-rich foods: green leafy vegetables, lentils, jaggery, and seasonal fruits.\n"
-            "3. Receive two doses of Tetanus Toxoid (TT) vaccines during pregnancy.\n"
-            "4. Emergency Warning: If you experience severe abdominal pain, vaginal bleeding, or blurred vision, call 102/108 or rush to the nearest CHC immediately."
-        )
+def build_system_prompt(context: str = "") -> str:
+    prompt = (
+        "You are Cura AI (क्यूरा AI), a friendly, compassionate, and knowledgeable healthcare assistant for Heal-U.\n"
+        "Your mission is to help people understand their illnesses, symptoms, and health questions in a warm, caring, and comforting manner — just like a trusted family doctor speaking with a patient.\n\n"
+        "Core Guidelines:\n"
+        "1. CONVERSATION CONTEXT & MEMORY: Remember and build upon the previous conversation turns with the user. If the user refers to something previously discussed (e.g. 'can I take it?', 'is this contagious?', 'what about for my child?'), maintain full context and give coherent, continuous advice.\n"
+        "2. EMPATHY & TONE: Be warm, friendly, reassuring, and conversational. Acknowledge and empathize with how the user feels (e.g. 'I'm sorry to hear that you're in pain', 'घबराएं नहीं, आइए इसे समझते हैं'). Never sound like a cold, bureaucratic rulebook or brochure.\n"
+        "3. LANGUAGE: Respond naturally in the EXACT SAME language the user asked in (Hindi, English, or conversational Hinglish). Keep explanations simple and jargon-free so that anyone can easily understand.\n"
+        "4. EXPLANATION: Clearly and gently explain potential causes or factors contributing to their symptoms in everyday terms.\n"
+        "5. PRACTICAL COMFORT & HOME CARE: Suggest practical home care measures, soothing remedies, hydration, nutrition, and rest.\n"
+        "6. SAFE OVER-THE-COUNTER ADVICE: If relevant, mention safe common over-the-counter options (such as Paracetamol for fever or body ache, ORS for dehydration, warm salt water gargle for throat) with appropriate precautions. Never prescribe restricted prescription medicines or antibiotics.\n"
+        "7. DANGER SIGNS & WHEN TO VISIT A DOCTOR: Gently mention warning signs they should keep an eye on, and encourage visiting a qualified doctor, clinic, or nearby Primary Health Centre (PHC) if symptoms persist, worsen, or cause significant distress."
+    )
+    if context and context.strip():
+        prompt += f"\n\nOptional Clinical Knowledge Reference (use only if helpful):\n{context}"
+    return prompt
 
-    # 5. Anemia & Chronic Weakness
-    elif category == "anemia" or "Anemia" in primary_content or "कमजोरी" in primary_content:
-        if hindi:
-            return (
-                "1. खून की कमी (एनीमिया) दूर करने के लिए पालक, मेथी, सहजन की पत्तियां, भुना चना, गुड़ और अंकुरित अनाज खाएं।\n"
-                "2. खाने के साथ नींबू, आंवला या अमरूद लें—विटामिन सी शरीर में आयरन सोखने में मदद करता है।\n"
-                "3. खाने के तुरंत बाद गाढ़ी चाय या कॉफी न पिएं क्योंकि इससे आयरन का असर कम हो जाता है।\n"
-                "4. नजदीकी PHC पर जाकर हीमोग्लोबिन (Hb) की निःशुल्क जांच कराएं और डॉक्टर की सलाह से आयरन सिरप/गोलियां लें।"
-            )
+def friendly_emergency_fallback(query: str) -> str:
+    """Warm, friendly response used only if all remote AI service calls are completely unreachable."""
+    if is_hindi(query):
         return (
-            "1. Increase iron-rich dietary sources: green leafy vegetables (spinach, moringa), jaggery, roasted chickpeas, and lentils.\n"
-            "2. Pair meals with Vitamin-C sources (lemon, amla, guava) to enhance natural iron absorption in the gut.\n"
-            "3. Avoid drinking strong tea or coffee immediately after meals as tannins inhibit iron absorption.\n"
-            "4. Visit the local PHC for a simple, free Hemoglobin prick test and obtain appropriate iron supplements if advised."
+            "नमस्ते! मैं समझ सकता हूँ कि आप अभी अस्वस्थ महसूस कर रहे हैं, और मैं आपकी पूरी मदद करना चाहता हूँ। "
+            "अभी हमारे मुख्य AI सर्वर से संपर्क करने में थोड़ी तकनीकी समस्या आ रही है, लेकिन आप बिल्कुल परेशान न हों।\n\n"
+            "अभी के लिए कुछ जरूरी और सुरक्षित सलाह:\n"
+            "• **पर्याप्त आराम करें:** शरीर को तनाव न दें और पूरी नींद लें।\n"
+            "• **तरल पदार्थ व पानी:** साफ उबला या गुनगुना पानी, ओआरएस (ORS), नारियल पानी या हल्का सूप घूंट-घूंट पीते रहें।\n"
+            "• **हल्का आहार:** सुपाच्य भोजन जैसे खिचड़ी, दलिया या फल खाएं।\n"
+            "• **सावधानी:** बिना डॉक्टर या फार्मासिस्ट की सलाह के कोई तेज एंटीबायोटिक या नई दवा न लें।\n"
+            "• **डॉक्टर से परामर्श:** यदि आपकी तकलीफ बहुत ज्यादा है, तेज बुखार 48 घंटे से न उतरे, या सांस लेने में परेशानी हो, तो बिना देर किए नजदीकी डॉक्टर या प्राथमिक स्वास्थ्य केंद्र (PHC) जाएं।\n\n"
+            "कृपया कुछ ही पलों में मुझसे पुनः पूछें, मैं हमेशा आपके स्वास्थ्य के लिए उपस्थित हूँ!"
         )
+    return (
+        "Hello! I understand you are feeling unwell, and I truly want to help you feel better. "
+        "Our main AI service is experiencing a brief connectivity hiccup right now, but please don't worry.\n\n"
+        "Here are some safe, immediate steps you can take:\n"
+        "• **Rest & Recover:** Give your body plenty of restful sleep and avoid strenuous activity.\n"
+        "• **Stay Well-Hydrated:** Drink plenty of clean boiled/warm water, ORS fluids, herbal tea, or clear soups.\n"
+        "• **Nourishing Food:** Stick to light, easily digestible meals like porridge, khichdi, or fruits.\n"
+        "• **Caution:** Avoid taking strong medications or unprescribed antibiotics on your own.\n"
+        "• **When to Seek Care:** If your symptoms are severe, worsening, or accompanied by high fever or shortness of breath, please visit a local physician or your nearest health clinic promptly.\n\n"
+        "Please feel free to ask me again in just a moment — I am always here to support your health!"
+    )
 
-    # 6. Snakebite First Aid
-    elif category == "snakebite" or "Snake" in primary_content or "सांप" in primary_content:
-        if hindi:
-            return (
-                "1. मरीज को बिल्कुल शांत और स्थिर रखें, हिलने-डुलने न दें (मूवमेंट से जहर तेजी से फैलता है)।\n"
-                "2. घाव के पास की अंगूठी, घड़ी, तंग कपड़े तुरंत उतार लें। घाव को दिल के स्तर से नीचे रखें।\n"
-                "3. सख्त मनाही: घाव पर कट न लगाएं, मुंह से जहर न चूसें और न ही कसकर रस्सी बांधें।\n"
-                "4. तुरंत 108 पर कॉल करें और उस नजदीकी अस्पताल ले जाएं जहां एंटी-स्नेक वेनम (ASV) उपलब्ध हो।"
-            )
-        return (
-            "1. Keep the victim completely still and calm; physical movement accelerates venom circulation in the bloodstream.\n"
-            "2. Immobilize the limb using a splint or sling, keeping it below heart level. Remove all rings, tight bangles, and footwear.\n"
-            "3. STRICTLY AVOID cutting the wound, sucking venom, or applying tight tourniquets.\n"
-            "4. Dial 108 ambulance immediately and transport to the nearest facility stocked with Anti-Snake Venom (ASV)."
-        )
+def response(query: str, history: list = None):
+    if history is None:
+        history = []
 
-    # 7. Heatstroke / Loo / Sunstroke
-    elif category == "heatstroke" or "Heat" in primary_content or "लू" in primary_content:
-        if hindi:
-            return (
-                "1. मरीज को तुरंत ठंडी, छायादार जगह पर लिटाएं और कपड़े ढीले करें।\n"
-                "2. सादे पानी से बदन पोंछें और पंखा चलाएं ताकि शरीर का तापमान सामान्य हो सके।\n"
-                "3. यदि मरीज होश में हो तो आम का पना, छाछ, नींबू पानी या ओआरएस (ORS) का घोल घूंट-घूंट पिलाएं।\n"
-                "4. यदि पसीना आना बंद हो जाए, त्वचा गर्म व सूखी हो या मरीज बेहोश होने लगे, तो तुरंत अस्पताल ले जाएं।"
-            )
-        return (
-            "1. Move the person to a cool, shaded environment immediately and loosen tight clothing.\n"
-            "2. Sponge body with room-temperature water and fan vigorously to lower core temperature.\n"
-            "3. If conscious, offer cool fluids, buttermilk, raw mango drink, or ORS in frequent small sips.\n"
-            "4. If patient exhibits dry hot skin, confusion, or loss of consciousness, seek emergency hospitalization immediately."
-        )
+    # 1. Contextual search query: if query is a brief follow-up, include recent user query for retrieval
+    search_query = query
+    if len(query.split()) < 4 and history:
+        for prev in reversed(history):
+            if prev.get("role") in ["user", "human"] and prev.get("content"):
+                search_query = f"{prev['content']} {query}"
+                break
 
-    # 8. Minor Wound, Burn or Cut Care
-    elif category == "wound_care" or "Wound" in primary_content or "चोट" in primary_content:
-        if hindi:
-            return (
-                "1. कटे हुए घाव को 5 मिनट तक साफ बहते पानी और हल्के साबुन से धोएं। साफ कपड़े से दबाकर खून रोकें।\n"
-                "2. जलने पर: जले हुए अंग पर तुरंत 15-20 मिनट तक सादा ठंडा नल का पानी डालें। टूथपेस्ट, घी या गोबर कभी न लगाएं।\n"
-                "3. यदि घाव पर जंग लगा लोहा या मिट्टी लगी हो, तो 24 घंटे के अंदर PHC जाकर टिटनेस (TT) का टीका लगवाएं।\n"
-                "4. यदि घाव गहरा हो, खून न रुक रहा हो या मवाद बनने लगे, तो डॉक्टर को तुरंत दिखाएं।"
-            )
-        return (
-            "1. For cuts: Cleanse wound under clean running tap water with mild soap for 5 minutes. Apply firm pressure with a clean cloth to stop bleeding.\n"
-            "2. For burns: Place affected area under cool running water for 15-20 minutes immediately. Never apply toothpaste, ink, or ghee.\n"
-            "3. If injured by rusty metals or soil, obtain a Tetanus Toxoid (TT) booster within 24 hours at the PHC.\n"
-            "4. Visit the PHC if the wound is gaping deep, won't stop bleeding after 10 minutes of pressure, or shows signs of infection."
-        )
-
-    # Default general guidance
-    else:
-        if hindi:
-            return (
-                "1. पर्याप्त आराम करें और साफ उबला हुआ पानी व तरल पदार्थ खूब पिएं।\n"
-                "2. अपने लक्षणों पर नजर रखें और बिना डॉक्टर की सलाह के कोई एंटीबायोटिक या अनजान दवा न लें।\n"
-                "3. यदि परेशानी 24 से 48 घंटे में ठीक न हो या बढ़ने लगे, तो नजदीकी प्राथमिक स्वास्थ्य केंद्र (PHC) जाकर डॉक्टर से परामर्श लें।"
-            )
-        return (
-            "1. Get adequate rest and drink plenty of clean boiled water and oral fluids.\n"
-            "2. Monitor your symptoms closely and avoid taking unprescribed antibiotics or strong medications without medical consultation.\n"
-            "3. If symptoms persist beyond 48 hours or worsen, visit your nearest Primary Health Centre (PHC) for clinical evaluation."
-        )
-
-# main rag
-def response(query: str):
-    docs = get_langchain_docs(query, k=2)
-    
+    docs = get_langchain_docs(search_query, k=2)
     sources = list(dict.fromkeys(d.metadata.get("source") for d in docs if d.metadata.get("source")))
-
     if not sources:
-        sources = ["WHO & ICMR Clinical Guidelines"]
+        sources = ["Cura AI Health Knowledge"]
 
-    if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY.strip() and not settings.GEMINI_API_KEY.startswith("AQ."):
+    context_str = format_docs(docs)
+    system_prompt = build_system_prompt(context_str)
+
+    preferred_model = settings.LLM_MODEL or "gemini-3.8-flash"
+    candidate_models = []
+    for m in [preferred_model, "gemini-3.8-flash", "gemini-3.5-flash-lite"]:
+        if m and m not in candidate_models:
+            candidate_models.append(m)
+
+    network_is_offline = False
+
+    # 2. Try Google GenAI official SDK with full multi-turn conversation memory
+    if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY.strip():
         try:
-            from langchain_google_genai import ChatGoogleGenerativeAI
-            from langchain_core.prompts import ChatPromptTemplate
-            from langchain_core.output_parsers import StrOutputParser
+            from google import genai
+            from google.genai import types
 
-            system_prompt = (
-                "You are an AI Rural Healthcare Assistant for low-literacy users in India.\n"
-                "Ground your answer STRICTLY in the provided WHO and ICMR guidelines.\n"
-                "Reply in the exact same language (Hindi or English) as the user's message.\n"
-                "Keep your answer to at most 3-4 short, simple, actionable points.\n"
-                "Do NOT prescribe prescription medicines. Always advise visiting the nearest Primary Health Centre (PHC) if symptoms persist.\n\n"
-                "Verified Context:\n{context}"
-            )
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", system_prompt),
-                ("human", "{question}")
-            ])
+            # Build multi-turn content items
+            contents_list = []
+            for turn in history:
+                content_text = turn.get("content", "").strip()
+                if not content_text:
+                    continue
+                turn_role = "user" if turn.get("role") in ["user", "human"] else "model"
+                contents_list.append(types.Content(
+                    role=turn_role,
+                    parts=[types.Part.from_text(text=content_text)]
+                ))
 
-            model_name = "gemini-1.5-flash" if "3.8" in settings.LLM_MODEL else settings.LLM_MODEL
-            llm = ChatGoogleGenerativeAI(
-                model=model_name,
-                google_api_key=settings.GEMINI_API_KEY,
-                temperature=0.3
-            )
+            # Add current user prompt
+            contents_list.append(types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=query)]
+            ))
 
-            chain = prompt | llm | StrOutputParser()
-            result = chain.invoke({"context": format_docs(docs), "question": query})
-            return result.strip(), sources
-        except Exception as e:
-            pass
+            for model_name in candidate_models:
+                try:
+                    res = client.models.generate_content(
+                        model=model_name,
+                        contents=contents_list,
+                        config=types.GenerateContentConfig(
+                            system_instruction=system_prompt,
+                            temperature=0.6,
+                        )
+                    )
+                    if res and res.text and res.text.strip():
+                        return res.text.strip(), sources
+                except Exception as model_err:
+                    logger.warning(f"google.genai with model {model_name} failed: {model_err}")
+                    if is_network_offline_error(model_err):
+                        network_is_offline = True
+                        break
+                    continue
+        except Exception as sdk_err:
+            logger.warning(f"google.genai SDK initialization note: {sdk_err}")
+            if is_network_offline_error(sdk_err):
+                network_is_offline = True
 
-    fallback_text = offline_answer(query, docs)
-    return fallback_text, sources
+        # 3. Try LangChain ChatGoogleGenerativeAI if network is not completely down
+        if not network_is_offline:
+            try:
+                from langchain_google_genai import ChatGoogleGenerativeAI
+                from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+
+                lc_messages = [SystemMessage(content=system_prompt)]
+                for turn in history:
+                    content_text = turn.get("content", "").strip()
+                    if not content_text:
+                        continue
+                    if turn.get("role") in ["user", "human"]:
+                        lc_messages.append(HumanMessage(content=content_text))
+                    else:
+                        lc_messages.append(AIMessage(content=content_text))
+
+                lc_messages.append(HumanMessage(content=query))
+
+                for model_name in candidate_models:
+                    try:
+                        llm = ChatGoogleGenerativeAI(
+                            model=model_name,
+                            google_api_key=settings.GEMINI_API_KEY,
+                            temperature=0.6,
+                        )
+                        res = llm.invoke(lc_messages)
+                        raw_content = getattr(res, "content", res)
+                        text = extract_text_from_ai_message(raw_content).strip()
+                        if text:
+                            return text, sources
+                    except Exception as model_err:
+                        logger.warning(f"ChatGoogleGenerativeAI with model {model_name} failed: {model_err}")
+                        if is_network_offline_error(model_err):
+                            break
+                        continue
+            except Exception as lc_err:
+                logger.warning(f"Langchain fallback note: {lc_err}")
+
+    # 4. Friendly caring fallback if network is completely down
+    return friendly_emergency_fallback(query), sources

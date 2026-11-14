@@ -1,13 +1,13 @@
 import { API_BASE } from "../utils/api.client";
 
-export async function sendChatMessage(message) {
+export async function sendChatMessage(message, history = []) {
   try {
     const response = await fetch(`${API_BASE}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, history }),
     });
 
     if (!response.ok) {

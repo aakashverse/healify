@@ -1,4 +1,5 @@
 import re
+from typing import List, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 from app.services.safety import check_red_flag, get_first_aid
@@ -7,8 +8,13 @@ from app.services.llm import response
 
 router = APIRouter(prefix="/user", tags=["chat"])
 
+class MessageTurn(BaseModel):
+    role: str # "user" or "model" / "assistant"
+    content: str
+
 class ChatRequest(BaseModel):
     message: str
+    history: Optional[List[MessageTurn]] = []
 
 def is_hindi_text(text: str) -> bool:
     return bool(re.search(r"[\u0900-\u097F]", text))
@@ -26,8 +32,9 @@ def triage_chat(req: ChatRequest):
             "sources": ["Emergency Medicine Clinical Protocol", "National Health Mission 108 SOP"]
         }
 
-    # non-emergency symptom inquiry processed by rag
-    result, sources = response(req.message)
+    # non-emergency symptom inquiry processed with short-term conversation memory
+    history_list = [{"role": h.role, "content": h.content} for h in (req.history or [])]
+    result, sources = response(req.message, history=history_list)
     return {
         "mode": "normal",
         "result": result,

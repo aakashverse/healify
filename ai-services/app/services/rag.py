@@ -45,10 +45,10 @@ def search_guidelines_keyword(query: str, k: int = 2):
 
     scored_guidelines.sort(key=lambda x: x[0], reverse=True)
 
-    top_matches = scored_guidelines[:k]
-    
-    if top_matches[0][0] == 0:
-        top_matches = [(1, CLINICAL_GUIDELINES[1])] # Default to Fever/General
+    # Only include guidelines if there is a genuine match (score >= 8)
+    # Never force default guidelines so the assistant stays flexible and friendly
+    relevant_matches = [m for m in scored_guidelines if m[0] >= 8]
+    top_matches = relevant_matches[:k]
 
     return [
         Document(

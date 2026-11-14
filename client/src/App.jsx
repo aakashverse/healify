@@ -49,7 +49,8 @@ function MainApp() {
 
         {activeTab === 'chat' && (
           <ChatView 
-            initialQuery={chatInitialQuery} 
+            initialQuery={chatInitialQuery}
+            onClearInitialQuery={() => setChatInitialQuery('')}
             onBack={() => handleSelectTab('home')}
           />
         )}

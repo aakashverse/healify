@@ -19,7 +19,62 @@ import { explainPrescriptionBase64 } from '../services/explain.api'
 import { uploadPrescription } from '../services/upload.api'
 import { useLanguage } from '../context/LanguageContext';
 
-export default function ChatView({ initialQuery = '', onBack }) {
+// Helper component to render formatted markdown-like text nicely
+function FormattedMessageText({ text }) {
+  if (!text) return null;
+
+  const lines = text.split('\n');
+
+  return (
+    <div className="space-y-1.5 leading-relaxed">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={idx} className="h-1.5" />;
+        }
+
+        // Header line like ### or ##
+        const isHeader = /^#{1,4}\s+/.test(trimmed);
+        const cleanHeader = trimmed.replace(/^#{1,4}\s+/, '');
+
+        // Format **bold** segments
+        const formatInline = (str) => {
+          const parts = str.split(/(\*\*[^*]+\*\*)/g);
+          return parts.map((part, pIdx) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return (
+                <strong key={pIdx} className="font-bold text-inherit">
+                  {part.slice(2, -2)}
+                </strong>
+              );
+            }
+            return part;
+          });
+        };
+
+        if (isHeader) {
+          return (
+            <h4 key={idx} className="font-black text-xs sm:text-sm pt-1.5 text-teal-950 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-600 shrink-0"></span>
+              <span>{formatInline(cleanHeader)}</span>
+            </h4>
+          );
+        }
+
+        // Bullet point detection (-, *, •, or 1., 2.)
+        const isBullet = /^([•\-\*]|\d+\.)\s+/.test(trimmed);
+
+        return (
+          <p key={idx} className={`${isBullet ? 'pl-2 sm:pl-3 border-l-2 border-teal-200/80' : ''}`}>
+            {formatInline(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function ChatView({ initialQuery = '', onClearInitialQuery, onBack }) {
   const { lang, t } = useLanguage();
 
   const [messages, setMessages] = useState([
@@ -41,6 +96,8 @@ export default function ChatView({ initialQuery = '', onBack }) {
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const isSendingRef = useRef(false);
+  const hasHandledInitialRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,8 +105,12 @@ export default function ChatView({ initialQuery = '', onBack }) {
 
   useEffect(() => {
     scrollToBottom();
-    if (initialQuery && initialQuery.trim()) {
-      handleSend(initialQuery);
+    if (initialQuery && initialQuery.trim() && !hasHandledInitialRef.current) {
+      hasHandledInitialRef.current = true;
+      handleSend(initialQuery.trim());
+      if (onClearInitialQuery) {
+        onClearInitialQuery();
+      }
     }
   }, [initialQuery]);
 
@@ -58,25 +119,39 @@ export default function ChatView({ initialQuery = '', onBack }) {
   }, [messages, loading]);
 
   const handleSend = async (queryText = null) => {
-    const textToSend = queryText || inputText;
-    if (!textToSend || !textToSend.trim() || loading) return;
+    const textToSend = typeof queryText === 'string' ? queryText : inputText;
+    if (!textToSend || !textToSend.trim() || isSendingRef.current) return;
+
+    isSendingRef.current = true;
+    setLoading(true);
+
+    const cleanText = textToSend.trim();
+    if (!queryText) setInputText('');
+
+    // Prepare short-term memory history from current conversation turns
+    // Extracts recent dialogue turns so Cura AI understands follow-up queries and previous context
+    const historyPayload = messages
+      .filter((m) => m.id !== 'welcome' && (m.sender === 'user' || m.sender === 'bot') && m.text)
+      .slice(-8)
+      .map((m) => ({
+        role: m.sender === 'user' ? 'user' : 'model',
+        content: m.text
+      }));
 
     const userMessage = {
-      id: 'msg-' + Date.now(),
+      id: 'msg-user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
       sender: 'user',
-      text: textToSend.trim(),
+      text: cleanText,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    if (!queryText) setInputText('');
-    setLoading(true);
 
     try {
-      const response = await sendChatMessage(textToSend.trim());
+      const response = await sendChatMessage(cleanText, historyPayload);
       
       const botMessage = {
-        id: 'msg-' + (Date.now() + 1),
+        id: 'msg-bot-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
         sender: 'bot',
         text: response.result || (lang === 'hi' ? 'सलाह उपलब्ध नहीं हो सकी। कृपया PHC जाकर डॉक्टर से परामर्श लें।' : 'No advice generated. Please visit nearest PHC.'),
         mode: response.mode || 'normal',
@@ -105,6 +180,7 @@ export default function ChatView({ initialQuery = '', onBack }) {
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
+      isSendingRef.current = false;
     }
   };
 
@@ -316,7 +392,7 @@ export default function ChatView({ initialQuery = '', onBack }) {
                       </div>
                     )}
 
-                    <p>{msg.text}</p>
+                    <FormattedMessageText text={msg.text} />
 
                     {isBot && msg.sources && msg.sources.length > 0 && (
                       <div className="pt-2 mt-2 border-t border-slate-100 text-[10px] sm:text-[11px] text-slate-400 flex flex-wrap items-center gap-1.5">
@@ -396,7 +472,13 @@ export default function ChatView({ initialQuery = '', onBack }) {
         </div>
 
         {/* Input Form Bar */}
-        <div className="p-2.5 sm:p-4 bg-white border-t border-slate-200 shrink-0">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+          className="p-2.5 sm:p-4 bg-white border-t border-slate-200 shrink-0"
+        >
           <div className="flex items-center gap-1.5 sm:gap-2">
             
             <input
@@ -420,15 +502,13 @@ export default function ChatView({ initialQuery = '', onBack }) {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
               disabled={loading}
               placeholder={t.chatPlaceholder}
               className="flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
             />
 
             <button
-              type="button"
-              onClick={() => handleSend()}
+              type="submit"
               disabled={loading || !inputText.trim()}
               className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-black shadow-md shadow-teal-600/20 disabled:opacity-40 transition-all cursor-pointer shrink-0"
             >
@@ -436,7 +516,7 @@ export default function ChatView({ initialQuery = '', onBack }) {
             </button>
 
           </div>
-        </div>
+        </form>
 
       </div>
 

@@ -3,6 +3,7 @@ const FAST_API = process.env.FAST_API || process.env.FASTAPI_URL || "http://127.
 export const SendChat = async (req, res) => {
     try {
         const message = req.body.message || req.body.prompt || req.body.query;
+        const history = Array.isArray(req.body.history) ? req.body.history : [];
 
         if (!message || typeof message !== "string" || !message.trim()) {
             return res.status(400).json({
@@ -16,7 +17,10 @@ export const SendChat = async (req, res) => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ message: message.trim() })
+            body: JSON.stringify({ 
+                message: message.trim(),
+                history: history
+            })
         });
 
         if (!response.ok) {

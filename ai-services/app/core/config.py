@@ -1,8 +1,12 @@
+import os
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # load configs from env
 class Settings(BaseSettings):
-    GEMINI_API_KEY: str = ""
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY")
     LLM_MODEL: str = "gemini-3.8-flash"
     CHROMA_DIR: str = "./chroma_db"
     GUIDELINES_DIR: str = "./app/data"
