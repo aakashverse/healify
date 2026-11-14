@@ -10,55 +10,57 @@ import {
   FileScan,
   Home,
   ShieldAlert,
-  Sparkles,
-  Stethoscope
+  FolderHeart,
+  User,
+  LogIn,
+  LogOut,
+  ChevronDown,
+  Droplet
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ activeTab, onSelectTab }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const { lang, toggleLang, t } = useLanguage();
+  const { user, isAuthenticated, logout, openAuthModal } = useAuth();
 
   const navItems = [
     { id: 'home', label: t.navHome, icon: Home },
     { id: 'chat', label: t.navChat, icon: Bot, isAi: true },
     { id: 'scanner', label: t.navScanner, icon: FileScan },
+    { id: 'records', label: t.navRecords, icon: FolderHeart },
     { id: 'hospitals', label: t.navHospitals, icon: MapPin },
     { id: 'firstaid', label: t.navFirstAid, icon: ShieldAlert, isSos: true },
   ];
 
   return (
     <>
-      {/* Top Sticky Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18 sm:h-20">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-14 sm:h-15">
             
             {/* Brand Logo */}
             <button 
               onClick={() => onSelectTab('home')}
-              className="flex items-center gap-3 text-left group cursor-pointer"
+              className="flex items-center gap-2.5 text-left group cursor-pointer"
             >
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-teal-600 via-cyan-600 to-blue-600 flex items-center justify-center text-white shadow-md shadow-teal-600/20 group-hover:scale-105 transition-all">
-                <HeartPulse className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
+              <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-xs group-hover:bg-emerald-700 transition-colors">
+                <HeartPulse className="w-4 h-4" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-                    Heal<span className="text-teal-600">-U</span>
-                  </span>
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
-                    {lang === 'hi' ? 'स्वास्थ्य सेवा' : 'Care'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
-                  {t.brandTagline}
-                </p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-lg font-extrabold tracking-tight text-slate-900">
+                  Heal<span className="text-emerald-600">-U</span>
+                </span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  Health
+                </span>
               </div>
             </button>
 
             {/* Desktop Navigation Segmented Pill Bar */}
-            <nav className="hidden lg:flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/90 shadow-2xs">
+            <nav className="hidden lg:flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -67,21 +69,21 @@ export default function Navbar({ activeTab, onSelectTab }) {
                   <button
                     key={item.id}
                     onClick={() => onSelectTab(item.id)}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       isActive
                         ? item.isAi
-                          ? 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-sm'
+                          ? 'bg-emerald-600 text-white shadow-2xs'
                           : item.isSos
-                          ? 'bg-rose-600 text-white shadow-sm'
-                          : 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+                          ? 'bg-rose-600 text-white shadow-2xs'
+                          : 'bg-white text-slate-900 shadow-2xs border border-slate-200/80 font-bold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${
+                    <Icon className={`w-3.5 h-3.5 ${
                       isActive 
                         ? 'text-white' 
                         : item.isAi 
-                        ? 'text-teal-600' 
+                        ? 'text-emerald-600' 
                         : item.isSos 
                         ? 'text-rose-600' 
                         : 'text-slate-500'
@@ -92,51 +94,114 @@ export default function Navbar({ activeTab, onSelectTab }) {
               })}
             </nav>
 
-            {/* Right Action Bar: Single-Click Language Switcher & SOS */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Right Action Bar */}
+            <div className="flex items-center gap-2">
               
-              {/* SINGLE-CLICK LANGUAGE TOGGLE BUTTON */}
+              {/* Single-Click Language Toggle */}
               <button
                 onClick={toggleLang}
-                className="group flex items-center gap-1.5 p-1 sm:px-3 sm:py-2 rounded-xl border-2 border-slate-200 hover:border-teal-500 bg-white hover:bg-teal-50/50 text-slate-800 transition-all cursor-pointer shadow-2xs"
-                title="Single-click to switch language (English / हिन्दी)"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/50 text-slate-700 transition-all cursor-pointer text-xs font-semibold shadow-2xs"
+                title="Switch Language (English / हिन्दी)"
                 aria-label="Change language"
               >
-                <div className="w-7 h-7 sm:w-6 sm:h-6 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs">
-                  <Languages className="w-4 h-4 text-teal-700" />
-                </div>
-                <div className="flex items-center text-xs font-black px-1">
-                  <span className={`${lang === 'en' ? 'text-teal-700 font-black' : 'text-slate-400'}`}>
-                    EN
-                  </span>
-                  <span className="mx-1 text-slate-300">/</span>
-                  <span className={`${lang === 'hi' ? 'text-teal-700 font-black' : 'text-slate-400'}`}>
-                    हिन्दी
-                  </span>
-                </div>
+                <Languages className="w-3.5 h-3.5 text-emerald-700" />
+                <span>{lang === 'en' ? 'हिन्दी' : 'English'}</span>
               </button>
+
+              {/* User Profile / Login */}
+              {isAuthenticated ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-900 transition-all cursor-pointer shadow-2xs"
+                    aria-label="User account menu"
+                  >
+                    <div className="w-6 h-6 rounded-md bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0">
+                      {user?.name ? user.name.trim().charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <span className="text-xs font-semibold max-w-[85px] sm:max-w-[120px] truncate">
+                      {user?.name ? user.name.split(' ')[0] : 'User'}
+                    </span>
+                    {(user?.blood_group || user?.bloodGroup) && (
+                      <span className="hidden sm:inline text-[10px] text-rose-700 font-bold px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200 shrink-0">
+                        {user.blood_group || user.bloodGroup}
+                      </span>
+                    )}
+                    <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+                  </button>
+
+                  {profileDropdownOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40 bg-transparent" 
+                        onClick={() => setProfileDropdownOpen(false)} 
+                      />
+                      <div 
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in-50 text-xs"
+                      >
+                        <div className="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/50">
+                          <p className="font-bold text-slate-900 truncate text-xs sm:text-sm">{user?.name || 'User'}</p>
+                          <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
+                          {(user?.blood_group || user?.bloodGroup) && (
+                            <p className="text-[10px] text-rose-700 font-bold mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200">
+                              <Droplet className="w-3 h-3 text-rose-600" />
+                              <span>{lang === 'hi' ? 'रक्त समूह' : 'Blood'}: {user?.blood_group || user?.bloodGroup}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            onSelectTab('records');
+                            setProfileDropdownOpen(false);
+                          }}
+                          className="w-full px-3.5 py-2 text-left font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 flex items-center gap-2 cursor-pointer transition-colors"
+                        >
+                          <FolderHeart className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{t.navRecords}</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            logout();
+                            setProfileDropdownOpen(false);
+                          }}
+                          className="w-full px-3.5 py-2 text-left font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 border-t border-slate-100 cursor-pointer transition-colors"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>{t.authLogout}</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => openAuthModal('login')}
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>{t.navLogin}</span>
+                </button>
+              )}
 
               {/* Direct 108 Emergency Call */}
               <a 
                 href="tel:108" 
-                className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 shadow-md shadow-red-600/20 transition-all text-xs font-black"
-                title="Call 108 National Emergency Ambulance"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-all text-xs font-bold shadow-2xs"
+                title="Call 108 Emergency Ambulance"
               >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-200 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                </span>
-                <PhoneCall className="w-3.5 h-3.5" />
+                <PhoneCall className="w-3 h-3" />
                 <span>108</span>
               </a>
 
               {/* Mobile Drawer Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
+                className="lg:hidden p-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
                 aria-label="Toggle navigation menu"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
 
             </div>
@@ -146,7 +211,46 @@ export default function Navbar({ activeTab, onSelectTab }) {
 
         {/* Mobile Dropdown Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-2 animate-in slide-in-from-top-2 shadow-lg">
+          <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-5 space-y-1.5 animate-in slide-in-from-top-2 shadow-lg">
+            {isAuthenticated ? (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 mb-2 text-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                    {user?.name ? user.name.trim().charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-900 truncate">{user?.name || 'User'}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+                    {(user?.blood_group || user?.bloodGroup) && (
+                      <span className="text-[10px] text-rose-700 font-bold px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200 inline-block mt-0.5">
+                        {user.blood_group || user.bloodGroup}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 shrink-0 cursor-pointer"
+                >
+                  {t.authLogout}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  openAuthModal('login');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full py-2 rounded-xl bg-emerald-600 text-white font-semibold text-xs flex items-center justify-center gap-2 mb-2 shadow-xs"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>{t.navLogin}</span>
+              </button>
+            )}
+
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -158,40 +262,27 @@ export default function Navbar({ activeTab, onSelectTab }) {
                     onSelectTab(item.id);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-black transition-all text-left ${
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
                     isActive
                       ? item.isAi
-                        ? 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white'
+                        ? 'bg-emerald-600 text-white font-bold'
                         : item.isSos
-                        ? 'bg-rose-600 text-white'
-                        : 'bg-slate-900 text-white'
-                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                        ? 'bg-rose-600 text-white font-bold'
+                        : 'bg-slate-900 text-white font-bold'
+                      : 'text-slate-700 hover:bg-slate-100'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
                 </button>
               );
             })}
-
-            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-              <button
-                onClick={() => {
-                  toggleLang();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full py-3 rounded-2xl border-2 border-teal-300 bg-teal-50 text-teal-800 font-black text-sm flex items-center justify-center gap-2"
-              >
-                <Languages className="w-4 h-4" />
-                <span>{t.langToggleBtn}</span>
-              </button>
-            </div>
           </div>
         )}
       </header>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR (Thumb-friendly for rural & urban smartphone users) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-2 py-1.5 flex items-center justify-around shadow-xl">
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-1 py-1 flex items-center justify-around shadow-sm">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -200,28 +291,28 @@ export default function Navbar({ activeTab, onSelectTab }) {
             <button
               key={item.id}
               onClick={() => onSelectTab(item.id)}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all ${
+              className={`flex flex-col items-center justify-center py-1 px-1 rounded-lg transition-all ${
                 isActive
                   ? item.isAi
-                    ? 'text-teal-600 scale-105 font-black'
+                    ? 'text-emerald-700 font-bold'
                     : item.isSos
-                    ? 'text-rose-600 scale-105 font-black'
-                    : 'text-slate-900 scale-105 font-black'
-                  : 'text-slate-500 font-medium hover:text-slate-900'
+                    ? 'text-rose-600 font-bold'
+                    : 'text-slate-900 font-bold'
+                  : 'text-slate-500 font-medium hover:text-slate-800'
               }`}
             >
-              <div className={`p-1.5 rounded-xl ${
+              <div className={`p-1 rounded-lg ${
                 isActive 
                   ? item.isAi 
-                    ? 'bg-teal-50 text-teal-700' 
+                    ? 'bg-emerald-50 text-emerald-700' 
                     : item.isSos 
                     ? 'bg-rose-50 text-rose-700' 
                     : 'bg-slate-100 text-slate-900'
                   : 'text-slate-500'
               }`}>
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4" />
               </div>
-              <span className="text-[10px] mt-0.5 leading-tight truncate max-w-[64px]">
+              <span className="text-[9px] mt-0.5 leading-tight truncate max-w-[50px]">
                 {item.label}
               </span>
             </button>

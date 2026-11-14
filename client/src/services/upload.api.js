@@ -5,7 +5,7 @@ export async function uploadPrescription(file) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_BASE}/upload`, {
+    const response = await fetch(`${API_BASE}/api/upload`, {
       method: 'POST',
       body: formData,
     });

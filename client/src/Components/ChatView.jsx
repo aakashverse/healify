@@ -305,26 +305,26 @@ export default function ChatView({ initialQuery = '', onClearInitialQuery, onBac
     <div className="animate-view-fade max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 pb-24 lg:pb-12">
       
       {/* Top Header Card */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5">
           {onBack && (
             <button
               onClick={onBack}
-              className="p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer shrink-0"
+              className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer shrink-0"
               title="Back"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
           )}
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-cyan-600 text-white flex items-center justify-center shadow-md shadow-teal-600/20 shrink-0">
-            <Bot className="w-6 h-6" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
+            <Bot className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
               <span>{t.chatTitle}</span>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             </h2>
-            <p className="text-xs text-slate-500 font-medium">
+            <p className="text-xs text-slate-500 font-normal">
               {t.chatSubtitle}
             </p>
           </div>
@@ -332,21 +332,15 @@ export default function ChatView({ initialQuery = '', onClearInitialQuery, onBac
 
         <a
           href="tel:108"
-          className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 text-red-700 border border-red-200 font-black text-xs hover:bg-red-100"
+          className="self-start sm:self-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs hover:bg-rose-100"
         >
-          <PhoneCall className="w-3.5 h-3.5 text-red-600 animate-bounce" />
+          <PhoneCall className="w-3 h-3 text-rose-600" />
           <span>SOS 108</span>
         </a>
       </div>
 
-      {/* Safety Notice Ribbon */}
-      <div className="p-3 rounded-2xl bg-teal-50/70 border border-teal-200 text-teal-900 text-xs flex items-center gap-2 font-medium">
-        <ShieldCheck className="w-4 h-4 text-teal-700 shrink-0" />
-        <span>{t.chatDisclaimer}</span>
-      </div>
-
       {/* Main Chat Container */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[65vh] sm:h-[68vh] min-h-[460px]">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden flex flex-col h-[65vh] sm:h-[68vh] min-h-[440px]">
         
         {/* Messages List */}
         <div className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-4 bg-slate-50/60">
@@ -369,12 +363,12 @@ export default function ChatView({ initialQuery = '', onClearInitialQuery, onBac
 
                 <div className="max-w-[88%] sm:max-w-[78%] space-y-1.5">
                   <div
-                    className={`p-3.5 sm:p-4 rounded-3xl text-xs sm:text-sm leading-relaxed shadow-2xs whitespace-pre-wrap ${
+                    className={`p-3 sm:p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-2xs whitespace-pre-wrap ${
                       isBot
                         ? isSos
-                          ? 'bg-rose-50 border-2 border-rose-300 text-rose-950 rounded-tl-xs shadow-red-100 font-medium'
+                          ? 'bg-rose-50 border border-rose-200 text-rose-950 rounded-tl-xs font-medium'
                           : 'bg-white border border-slate-200 text-slate-800 rounded-tl-xs font-medium'
-                        : 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-tr-xs shadow-md shadow-teal-600/10 font-medium'
+                        : 'bg-emerald-600 text-white rounded-tr-xs shadow-2xs font-medium'
                     }`}
                   >
                     {isSos && (
@@ -492,10 +486,10 @@ export default function ChatView({ initialQuery = '', onClearInitialQuery, onBac
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-2.5 sm:p-3 rounded-xl bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 transition-colors cursor-pointer shrink-0"
+              className="p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 transition-colors cursor-pointer shrink-0"
               title={t.chatAttachFile}
             >
-              <Paperclip className="w-5 h-5" />
+              <Paperclip className="w-4 h-4" />
             </button>
 
             <input
@@ -504,15 +498,15 @@ export default function ChatView({ initialQuery = '', onClearInitialQuery, onBac
               onChange={(e) => setInputText(e.target.value)}
               disabled={loading}
               placeholder={t.chatPlaceholder}
-              className="flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-teal-500 focus:bg-white transition-all font-medium"
+              className="flex-1 py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
             />
 
             <button
               type="submit"
               disabled={loading || !inputText.trim()}
-              className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-black shadow-md shadow-teal-600/20 disabled:opacity-40 transition-all cursor-pointer shrink-0"
+              className="p-2 sm:p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs disabled:opacity-40 transition-all cursor-pointer shrink-0"
             >
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4" />
             </button>
 
           </div>

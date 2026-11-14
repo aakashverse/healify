@@ -4,22 +4,14 @@ import {
   Search, 
   Sparkles, 
   FileScan, 
-  MapPin, 
   ShieldAlert, 
   ArrowRight, 
   PhoneCall, 
-  HeartPulse, 
   AlertCircle,
-  Clock,
-  ShieldCheck,
   Ambulance,
   Baby,
-  Building2,
   Stethoscope,
-  Pill,
-  Hospital,
-  Activity,
-  CheckCircle2
+  Hospital
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -51,10 +43,10 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
       desc: t.card1Desc,
       btnText: t.card1Btn,
       icon: Bot,
-      gradient: 'from-teal-600 via-cyan-600 to-blue-600',
-      badge: lang === 'hi' ? 'ICMR व WHO दिशानिर्देश' : 'ICMR & WHO Protocol',
-      borderHover: 'hover:border-teal-500',
-      tagColor: 'bg-teal-50 text-teal-800 border-teal-200'
+      iconColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      badge: lang === 'hi' ? 'AI परामर्श' : 'AI Triage',
+      borderHover: 'hover:border-emerald-500',
+      badgeStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200'
     },
     {
       id: 'scanner',
@@ -62,10 +54,10 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
       desc: t.card2Desc,
       btnText: t.card2Btn,
       icon: FileScan,
-      gradient: 'from-blue-600 via-indigo-600 to-cyan-600',
-      badge: lang === 'hi' ? 'विज़न AI स्कैनर' : 'Vision AI Scanner',
-      borderHover: 'hover:border-blue-500',
-      tagColor: 'bg-blue-50 text-blue-800 border-blue-200'
+      iconColor: 'bg-slate-100 text-slate-800 border-slate-200',
+      badge: lang === 'hi' ? 'विज़न AI' : 'Vision AI',
+      borderHover: 'hover:border-slate-500',
+      badgeStyle: 'bg-slate-100 text-slate-800 border-slate-200'
     },
     {
       id: 'hospitals',
@@ -73,10 +65,10 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
       desc: t.card3Desc,
       btnText: t.card3Btn,
       icon: Hospital,
-      gradient: 'from-emerald-600 to-teal-700',
-      badge: lang === 'hi' ? 'एंटी-वेनम व 24x7 इमरजेंसी' : 'Anti-Venom & 24x7',
-      borderHover: 'hover:border-emerald-500',
-      tagColor: 'bg-emerald-50 text-emerald-800 border-emerald-200'
+      iconColor: 'bg-teal-50 text-teal-800 border-teal-200',
+      badge: lang === 'hi' ? '24x7 केंद्र' : '24x7 Centres',
+      borderHover: 'hover:border-teal-500',
+      badgeStyle: 'bg-teal-50 text-teal-800 border-teal-200'
     },
     {
       id: 'firstaid',
@@ -84,47 +76,41 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
       desc: t.card4Desc,
       btnText: t.card4Btn,
       icon: ShieldAlert,
-      gradient: 'from-rose-600 via-red-600 to-amber-600',
-      badge: lang === 'hi' ? 'गोल्डन ऑवर SOPs' : 'Life-Saving SOPs',
+      iconColor: 'bg-rose-50 text-rose-700 border-rose-200',
+      badge: lang === 'hi' ? 'प्राथमिक उपचार' : 'Emergency SOP',
       borderHover: 'hover:border-rose-500',
-      tagColor: 'bg-rose-50 text-rose-800 border-rose-200'
+      badgeStyle: 'bg-rose-50 text-rose-800 border-rose-200'
     },
   ];
 
   const helplines = [
-    { number: '108', title: t.helpline108Name, desc: t.helpline108Sub, icon: Ambulance, color: 'text-rose-700 bg-rose-50/70 border-rose-200 hover:border-rose-400' },
-    { number: '102', title: t.helpline102Name, desc: t.helpline102Sub, icon: Baby, color: 'text-amber-700 bg-amber-50/70 border-amber-200 hover:border-amber-400' },
-    { number: '112', title: t.helpline112Name, desc: t.helpline112Sub, icon: ShieldAlert, color: 'text-sky-700 bg-sky-50/70 border-sky-200 hover:border-sky-400' },
-    { number: '1075', title: t.helpline1075Name, desc: t.helpline1075Sub, icon: Stethoscope, color: 'text-teal-700 bg-teal-50/70 border-teal-200 hover:border-teal-400' },
+    { number: '108', title: t.helpline108Name, desc: t.helpline108Sub, icon: Ambulance, color: 'text-rose-700 bg-rose-50/50 border-rose-200 hover:border-rose-400' },
+    { number: '102', title: t.helpline102Name, desc: t.helpline102Sub, icon: Baby, color: 'text-amber-700 bg-amber-50/50 border-amber-200 hover:border-amber-400' },
+    { number: '112', title: t.helpline112Name, desc: t.helpline112Sub, icon: ShieldAlert, color: 'text-slate-800 bg-slate-50 border-slate-200 hover:border-slate-400' },
+    { number: '1075', title: t.helpline1075Name, desc: t.helpline1075Sub, icon: Stethoscope, color: 'text-emerald-700 bg-emerald-50/50 border-emerald-200 hover:border-emerald-400' },
   ];
 
   return (
-    <div className="animate-view-fade py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 pb-24 lg:pb-14">
+    <div className="animate-view-fade py-6 sm:py-8 max-w-6xl mx-auto px-4 sm:px-6 space-y-8 pb-20 lg:pb-12">
       
       {/* 1. Welcoming Hero Banner */}
-      <div className="text-center max-w-3xl mx-auto space-y-4">
-        
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-xs font-black tracking-wide shadow-2xs">
-          <ShieldCheck className="w-4 h-4 text-teal-600" />
-          <span>{lang === 'hi' ? 'ग्रामीण एवं शहरी स्वास्थ्य पोर्टल' : 'Rural & Urban Community Health Portal'}</span>
-        </div>
-
-        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-snug">
+      <div className="text-center max-w-2xl mx-auto space-y-3 pt-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
           {t.heroGreeting}
         </h1>
 
-        <p className="text-xs sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed font-medium">
+        <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-normal">
           {t.heroSubtitle}
         </p>
 
-        {/* Big Clean Search Box */}
-        <div className="pt-2 max-w-2xl mx-auto">
+        {/* Clean, Compact Search Box */}
+        <div className="pt-1 max-w-xl mx-auto">
           <form 
             onSubmit={handleSearchSubmit}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center bg-white p-1.5 sm:p-2 rounded-2xl sm:rounded-3xl border-2 border-slate-300 hover:border-teal-500 focus-within:border-teal-600 focus-within:ring-4 focus-within:ring-teal-100 shadow-md transition-all gap-2"
+            className="flex items-center bg-white p-1 rounded-xl border border-slate-300 hover:border-emerald-500 focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100 shadow-2xs transition-all gap-1.5"
           >
-            <div className="flex items-center flex-1 px-2 py-1">
-              <Search className="w-5 h-5 text-slate-400 mr-2 shrink-0" />
+            <div className="flex items-center flex-1 px-2.5 py-1">
+              <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
               <input
                 type="text"
                 value={searchInput}
@@ -135,29 +121,29 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
             </div>
             <button
               type="submit"
-              className="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 text-white font-black text-xs sm:text-sm hover:from-teal-700 hover:to-blue-700 shadow-sm cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-700 shadow-2xs cursor-pointer shrink-0"
             >
-              <Sparkles className="w-4 h-4 text-amber-200" />
+              <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
               <span>{t.searchBtn}</span>
             </button>
           </form>
 
-          {/* Quick Clickable Symptom Chips */}
-          <div className="pt-3 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
-            <span className="text-[11px] font-bold text-slate-400 mr-1">
+          {/* Clickable Symptom Chips */}
+          <div className="pt-2.5 flex flex-wrap items-center justify-center gap-1.5">
+            <span className="text-[11px] font-semibold text-slate-400 mr-1">
               {t.popularInquiries}
             </span>
             {quickChips.map((chip, idx) => (
               <button
                 key={idx}
                 onClick={() => onSearchQuery(chip.query)}
-                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
                   chip.isSos
-                    ? 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100 font-black'
-                    : 'bg-white text-slate-700 border-slate-200 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-800 shadow-2xs'
+                    ? 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100 font-semibold'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400 hover:text-emerald-800 shadow-2xs'
                 }`}
               >
-                {chip.isSos && <AlertCircle className="w-3.5 h-3.5 text-rose-600" />}
+                {chip.isSos && <AlertCircle className="w-3 h-3 text-rose-600" />}
                 <span>{chip.label}</span>
               </button>
             ))}
@@ -166,8 +152,8 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
 
       </div>
 
-      {/* 2. THE 4 PRIMARY SERVICE CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 pt-2">
+      {/* 2. PRIMARY SERVICE CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {primaryCards.map((card) => {
           const Icon = card.icon;
 
@@ -175,64 +161,57 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
             <div
               key={card.id}
               onClick={() => onSelectTab(card.id)}
-              className={`group relative rounded-3xl bg-white border-2 border-slate-200/90 ${card.borderHover} p-6 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between`}
+              className={`group rounded-2xl bg-white border border-slate-200 ${card.borderHover} p-5 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between`}
             >
               <div>
-                
                 {/* Header: Icon + Badge */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr ${card.gradient} text-white flex items-center justify-center shadow-md shadow-slate-300/40 group-hover:scale-105 transition-transform`}>
-                    <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${card.iconColor} transition-transform group-hover:scale-105`}>
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <span className={`text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full border ${card.tagColor}`}>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${card.badgeStyle}`}>
                     {card.badge}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2 group-hover:text-teal-700 transition-colors">
+                <h3 className="text-base font-bold text-slate-900 mb-1 group-hover:text-emerald-700 transition-colors">
                   {card.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6 font-medium">
+                <p className="text-xs text-slate-500 leading-relaxed font-normal mb-4">
                   {card.desc}
                 </p>
-
               </div>
 
               {/* Action Button Bar */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="font-black text-xs sm:text-sm text-slate-900 group-hover:text-teal-700 transition-colors flex items-center gap-1.5">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span className="font-semibold text-xs text-emerald-700 group-hover:text-emerald-800 transition-colors flex items-center gap-1">
                   <span>{card.btnText}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
-
             </div>
           );
         })}
       </div>
 
-      {/* 3. Direct Emergency Helplines 4-Grid */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 space-y-5 shadow-xs">
-        
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-          <div>
-            <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-              <PhoneCall className="w-5 h-5 text-red-600" />
-              <span>{t.helplinesTitle}</span>
+      {/* 3. Emergency Helplines Grid */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-3 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="flex items-center gap-2">
+            <PhoneCall className="w-4 h-4 text-rose-600" />
+            <h2 className="text-sm font-bold text-slate-900">
+              {t.helplinesTitle}
             </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              {lang === 'hi' ? 'किसी भी मोबाइल या लैंडलाइन से बिना बैलेंस के तुरंत कॉल करें' : 'Toll-free emergency numbers accessible 24/7 with zero balance'}
-            </p>
           </div>
-          <span className="self-start sm:self-auto px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">
+          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
             24x7 Active
           </span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
           {helplines.map((line, idx) => {
             const LineIcon = line.icon;
 
@@ -240,26 +219,25 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
               <a
                 key={idx}
                 href={`tel:${line.number}`}
-                className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all flex flex-col justify-between group cursor-pointer ${line.color}`}
+                className={`p-3 rounded-xl border transition-all flex flex-col justify-between group cursor-pointer ${line.color}`}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xl sm:text-2xl font-black">{line.number}</span>
-                    <LineIcon className="w-5 h-5 opacity-90 group-hover:scale-110 transition-transform" />
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-base font-extrabold">{line.number}</span>
+                    <LineIcon className="w-4 h-4 opacity-80" />
                   </div>
-                  <h3 className="text-xs font-black text-slate-900">{line.title}</h3>
+                  <h3 className="text-xs font-bold text-slate-900 leading-tight">{line.title}</h3>
                   <p className="text-[10px] text-slate-500 mt-0.5 font-medium leading-tight">{line.desc}</p>
                 </div>
                 
-                <span className="mt-3 text-[11px] font-black underline underline-offset-2 flex items-center gap-1">
-                  <span>{lang === 'hi' ? 'कॉल लगाएं' : 'Call Now'}</span>
-                  <ArrowRight className="w-3 h-3" />
+                <span className="mt-2 text-[10px] font-bold flex items-center gap-0.5 text-slate-700 group-hover:text-slate-900">
+                  <span>{lang === 'hi' ? 'कॉल करें' : 'Call'}</span>
+                  <ArrowRight className="w-2.5 h-2.5" />
                 </span>
               </a>
             );
           })}
         </div>
-
       </div>
 
     </div>

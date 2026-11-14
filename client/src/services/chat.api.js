@@ -2,7 +2,7 @@ import { API_BASE } from "../utils/api.client";
 
 export async function sendChatMessage(message, history = []) {
   try {
-    const response = await fetch(`${API_BASE}/chat`, {
+    const response = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

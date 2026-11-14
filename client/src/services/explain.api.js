@@ -2,7 +2,7 @@ import { API_BASE } from "../utils/api.client";
 
 export async function explainPrescriptionBase64(imageBase64, mimeType = 'image/jpeg', fileName = '') {
   try {
-    const response = await fetch(`${API_BASE}/explain`, {
+    const response = await fetch(`${API_BASE}/api/explain`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
