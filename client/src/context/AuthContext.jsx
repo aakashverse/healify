@@ -32,7 +32,12 @@ export function AuthProvider({ children }) {
     async function loadUser() {
       const savedToken = localStorage.getItem("healu_token");
       if (!savedToken) {
-        if(isMounted) setLoading(false);
+        if (isMounted) {
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem("healu_user");
+          setLoading(false);
+        }
         return;
       }
 
@@ -46,6 +51,7 @@ export function AuthProvider({ children }) {
             setUser(null);
             setToken(null);
             localStorage.removeItem("healu_token");
+            localStorage.removeItem("healu_user");
           }
         }
       } catch (err) {
@@ -54,6 +60,7 @@ export function AuthProvider({ children }) {
           setUser(null);
           setToken(null);
           localStorage.removeItem("healu_token");
+          localStorage.removeItem("healu_user");
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -62,8 +69,19 @@ export function AuthProvider({ children }) {
 
     loadUser();
 
+    const handleSessionExpired = () => {
+      if (isMounted) {
+        setUser(null);
+        setToken(null);
+        setAuthModalTab("login");
+        setAuthModalOpen(true);
+      }
+    };
+    window.addEventListener("healu:session-expired", handleSessionExpired);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("healu:session-expired", handleSessionExpired);
     };
   }, []);
 
@@ -109,7 +127,7 @@ export function AuthProvider({ children }) {
       value={{
         user,
         token,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user && !!token,
         loading,
         login,
         register,

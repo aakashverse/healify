@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Bot, 
   Search, 
@@ -15,7 +16,8 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function HomeView({ onSelectTab, onSearchQuery }) {
+export default function HomeView() {
+  const navigate = useNavigate();
   const { lang, t } = useLanguage();
   const [searchInput, setSearchInput] = useState('');
 
@@ -27,13 +29,14 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
     { label: t.chipPregnancy, query: lang === 'hi' ? 'गर्भावस्था में नियमित जांच और पोषण' : 'Pregnancy antenatal checkup schedule' },
   ];
 
+  const handleNavigateChat = (query = '') => {
+    navigate('/chat', query ? { state: { initialQuery: query } } : undefined);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchInput.trim()) {
-      onSearchQuery(searchInput.trim());
-    } else {
-      onSelectTab('chat');
-    }
+    handleNavigateChat(searchInput.trim());
   };
 
   const primaryCards = [
@@ -136,7 +139,7 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
             {quickChips.map((chip, idx) => (
               <button
                 key={idx}
-                onClick={() => onSearchQuery(chip.query)}
+                onClick={() => handleNavigateChat(chip.query)}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
                   chip.isSos
                     ? 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100 font-semibold'
@@ -160,7 +163,10 @@ export default function HomeView({ onSelectTab, onSearchQuery }) {
           return (
             <div
               key={card.id}
-              onClick={() => onSelectTab(card.id)}
+              onClick={() => {
+                navigate(`/${card.id}`);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`group rounded-2xl bg-white border border-slate-200 ${card.borderHover} p-5 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between`}
             >
               <div>

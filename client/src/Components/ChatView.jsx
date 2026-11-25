@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Bot, 
   Send, 
@@ -10,8 +11,7 @@ import {
   RefreshCw, 
   User, 
   Paperclip,
-  CheckCircle2,
-  ArrowLeft
+  CheckCircle2
 } from 'lucide-react';
 
 import { sendChatMessage} from '../services/chat.api'
@@ -74,7 +74,9 @@ function FormattedMessageText({ text }) {
   );
 }
 
-export default function ChatView({ initialQuery = '', onClearInitialQuery, onBack }) {
+export default function ChatView({ initialQuery = '', onClearInitialQuery }) {
+  const location = useLocation();
+  const effectiveInitialQuery = initialQuery || location.state?.initialQuery || '';
   const { lang, t } = useLanguage();
 
   const [messages, setMessages] = useState([
@@ -105,14 +107,14 @@ export default function ChatView({ initialQuery = '', onClearInitialQuery, onBac
 
   useEffect(() => {
     scrollToBottom();
-    if (initialQuery && initialQuery.trim() && !hasHandledInitialRef.current) {
+    if (effectiveInitialQuery && effectiveInitialQuery.trim() && !hasHandledInitialRef.current) {
       hasHandledInitialRef.current = true;
-      handleSend(initialQuery.trim());
+      handleSend(effectiveInitialQuery.trim());
       if (onClearInitialQuery) {
         onClearInitialQuery();
       }
     }
-  }, [initialQuery]);
+  }, [effectiveInitialQuery]);
 
   useEffect(() => {
     scrollToBottom();
@@ -304,18 +306,9 @@ export default function ChatView({ initialQuery = '', onClearInitialQuery, onBac
   return (
     <div className="animate-view-fade max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 pb-24 lg:pb-12">
       
-      {/* Top Header Card */}
+      {/* Top Header Card (Clean & Modern, No clunky Back button) */}
       <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2.5">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer shrink-0"
-              title="Back"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          )}
           <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
             <Bot className="w-4 h-4" />
           </div>

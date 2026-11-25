@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-const JWT_SECRET = process.env.JWT_SECRET || "healu-secure-clinical-jwt-secret-key-2026-portal";
 const TOKEN_EXPIRY = "30d"; // 30 days session
+
+function getJwtSecret() {
+    return process.env.JWT_SECRET || "healu-secure-clinical-jwt-secret-key-2026-portal";
+}
 
 /**
  * Hashes a plaintext password using bcrypt
@@ -57,7 +60,7 @@ export function generateToken(user, expiresIn = TOKEN_EXPIRY) {
         name: user.name
     };
 
-    return jwt.sign(payload, JWT_SECRET, { expiresIn });
+    return jwt.sign(payload, getJwtSecret(), { expiresIn });
 }
 
 /**
@@ -67,7 +70,7 @@ export function verifyToken(token) {
     if (!token || typeof token !== "string") return null;
 
     try {
-        return jwt.verify(token, JWT_SECRET);
+        return jwt.verify(token, getJwtSecret());
     } catch {
         return null;
     }

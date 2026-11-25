@@ -8,7 +8,6 @@ import {
   Ambulance, 
   Droplet, 
   RefreshCw,
-  ArrowLeft,
   Hospital
 } from 'lucide-react';
 
@@ -66,7 +65,7 @@ const DEFAULT_FACILITIES = [
   }
 ];
 
-export default function FacilitiesExplorer({ onBack }) {
+export default function FacilitiesExplorer() {
   const { lang, t } = useLanguage();
   const [facilities, setFacilities] = useState(DEFAULT_FACILITIES);
   const [loading, setLoading] = useState(false);
@@ -109,18 +108,9 @@ export default function FacilitiesExplorer({ onBack }) {
   return (
     <div className="animate-view-fade max-w-5xl mx-auto px-4 py-5 sm:py-6 space-y-4 pb-20 lg:pb-12">
       
-      {/* Header */}
+      {/* Header (Clean & Modern, No clunky Back button) */}
       <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer shrink-0"
-              title="Back"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          )}
           <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
             <Hospital className="w-4 h-4" />
           </div>

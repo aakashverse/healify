@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
+import { ScannerProvider } from './context/ScannerContext';
 import Navbar from './Components/Navbar';
 import EmergencyBanner from './Components/EmergencyBanner';
 import HomeView from './Components/HomeView';
@@ -11,90 +13,49 @@ import FirstAidGuide from './Components/FirstAidGuide';
 import HealthRecordsView from './Components/HealthRecordsView';
 import AuthModal from './Components/AuthModal';
 import Footer from './Components/Footer';
-import { Bot, Sparkles } from 'lucide-react';
+import { Bot } from 'lucide-react';
 
 function MainApp() {
-  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'chat' | 'scanner' | 'records' | 'hospitals' | 'firstaid'
-  const [chatInitialQuery, setChatInitialQuery] = useState('');
-  const { lang, t } = useLanguage();
-
-  const handleSelectTab = (tabId) => {
-    setActiveTab(tabId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSearchQuery = (query) => {
-    setChatInitialQuery(query);
-    setActiveTab('chat');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const { lang } = useLanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-slate-50/60 text-slate-900 flex flex-col font-sans selection:bg-teal-100 selection:text-teal-900 antialiased">
       
       {/* 1. Emergency Top Ribbon */}
-      <EmergencyBanner onSelectFirstAid={() => handleSelectTab('firstaid')} />
+      <EmergencyBanner />
 
       {/* 2. Top Header & Tab Navigation Bar with 1-Click Language Switcher, User Profile & Mobile Bottom Nav */}
-      <Navbar 
-        activeTab={activeTab} 
-        onSelectTab={handleSelectTab} 
-      />
+      <Navbar />
 
-      {/* 3. Main Dedicated View Display */}
+      {/* 3. Main Dedicated Route Views */}
       <main className="flex-1">
-        {activeTab === 'home' && (
-          <HomeView 
-            onSelectTab={handleSelectTab} 
-            onSearchQuery={handleSearchQuery} 
-          />
-        )}
-
-        {activeTab === 'chat' && (
-          <ChatView 
-            initialQuery={chatInitialQuery}
-            onClearInitialQuery={() => setChatInitialQuery('')}
-            onBack={() => handleSelectTab('home')}
-          />
-        )}
-
-        {activeTab === 'scanner' && (
-          <PrescriptionScanner 
-            onBack={() => handleSelectTab('home')} 
-            onViewRecords={() => handleSelectTab('records')}
-          />
-        )}
-
-        {activeTab === 'records' && (
-          <HealthRecordsView 
-            onSelectTab={handleSelectTab} 
-          />
-        )}
-
-        {activeTab === 'hospitals' && (
-          <FacilitiesExplorer 
-            onBack={() => handleSelectTab('home')} 
-          />
-        )}
-
-        {activeTab === 'firstaid' && (
-          <FirstAidGuide 
-            onBack={() => handleSelectTab('home')} 
-          />
-        )}
+        <Routes>
+          <Route path="/" element={<HomeView />} />
+          <Route path="/chat" element={<ChatView />} />
+          <Route path="/scanner" element={<PrescriptionScanner />} />
+          <Route path="/records" element={<HealthRecordsView />} />
+          <Route path="/hospitals" element={<FacilitiesExplorer />} />
+          <Route path="/firstaid" element={<FirstAidGuide />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
       {/* 4. Global Auth Modal (Login / Sign Up) */}
       <AuthModal />
 
       {/* 5. Footer */}
-      <Footer onSelectTab={handleSelectTab} />
+      <Footer />
 
       {/* 6. Floating "Ask Cura AI" Launcher (Compact & Elegant) */}
-      {activeTab !== 'chat' && (
+      {location.pathname !== '/chat' && (
         <div className="hidden lg:block fixed bottom-5 right-5 z-40">
           <button
-            onClick={() => handleSelectTab('chat')}
+            onClick={() => {
+              navigate('/chat');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer"
             aria-label="Open Cura AI Assistant"
           >
@@ -110,10 +71,14 @@ function MainApp() {
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <MainApp />
-      </AuthProvider>
-    </LanguageProvider>
+    <BrowserRouter>
+      <LanguageProvider>
+        <AuthProvider>
+          <ScannerProvider>
+            <MainApp />
+          </ScannerProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </BrowserRouter>
   );
 }

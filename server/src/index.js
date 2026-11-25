@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import express from "express";
 import cors from "cors";
@@ -10,8 +9,8 @@ import authRoutes from "./routes/auth.route.js";
 import recordsRoutes from "./routes/records.route.js";
 import { connectMongoDB } from "./db/mongodb.js";
 
-// init db
-connectMongoDB();
+// Initialize Database (Atlas -> Local MongoDB -> Embedded SQLite fallback)
+await connectMongoDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   HeartPulse, 
   Bot, 
@@ -20,20 +21,29 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
-export default function Navbar({ activeTab, onSelectTab }) {
+export default function Navbar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const { lang, toggleLang, t } = useLanguage();
   const { user, isAuthenticated, logout, openAuthModal } = useAuth();
 
   const navItems = [
-    { id: 'home', label: t.navHome, icon: Home },
-    { id: 'chat', label: t.navChat, icon: Bot, isAi: true },
-    { id: 'scanner', label: t.navScanner, icon: FileScan },
-    { id: 'records', label: t.navRecords, icon: FolderHeart },
-    { id: 'hospitals', label: t.navHospitals, icon: MapPin },
-    { id: 'firstaid', label: t.navFirstAid, icon: ShieldAlert, isSos: true },
+    { id: 'home', path: '/', label: t.navHome, icon: Home },
+    { id: 'chat', path: '/chat', label: t.navChat, icon: Bot, isAi: true },
+    { id: 'scanner', path: '/scanner', label: t.navScanner, icon: FileScan },
+    { id: 'records', path: '/records', label: t.navRecords, icon: FolderHeart },
+    { id: 'hospitals', path: '/hospitals', label: t.navHospitals, icon: MapPin },
+    { id: 'firstaid', path: '/firstaid', label: t.navFirstAid, icon: ShieldAlert, isSos: true },
   ];
+
+  const handleNavClick = (path) => {
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <>
@@ -43,7 +53,7 @@ export default function Navbar({ activeTab, onSelectTab }) {
             
             {/* Brand Logo */}
             <button 
-              onClick={() => onSelectTab('home')}
+              onClick={() => handleNavClick('/')}
               className="flex items-center gap-2.5 text-left group cursor-pointer"
             >
               <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-xs group-hover:bg-emerald-700 transition-colors">
@@ -63,12 +73,14 @@ export default function Navbar({ activeTab, onSelectTab }) {
             <nav className="hidden lg:flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = activeTab === item.id;
+                const isActive = item.path === '/' 
+                  ? currentPath === '/' 
+                  : currentPath.startsWith(item.path);
 
                 return (
                   <button
                     key={item.id}
-                    onClick={() => onSelectTab(item.id)}
+                    onClick={() => handleNavClick(item.path)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       isActive
                         ? item.isAi
@@ -152,7 +164,7 @@ export default function Navbar({ activeTab, onSelectTab }) {
 
                         <button
                           onClick={() => {
-                            onSelectTab('records');
+                            handleNavClick('/records');
                             setProfileDropdownOpen(false);
                           }}
                           className="w-full px-3.5 py-2 text-left font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 flex items-center gap-2 cursor-pointer transition-colors"
@@ -198,7 +210,7 @@ export default function Navbar({ activeTab, onSelectTab }) {
               {/* Mobile Drawer Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
+                className="lg:hidden p-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                 aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -244,7 +256,7 @@ export default function Navbar({ activeTab, onSelectTab }) {
                   openAuthModal('login');
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2 rounded-xl bg-emerald-600 text-white font-semibold text-xs flex items-center justify-center gap-2 mb-2 shadow-xs"
+                className="w-full py-2 rounded-xl bg-emerald-600 text-white font-semibold text-xs flex items-center justify-center gap-2 mb-2 shadow-xs cursor-pointer"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>{t.navLogin}</span>
@@ -253,16 +265,18 @@ export default function Navbar({ activeTab, onSelectTab }) {
 
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeTab === item.id;
+              const isActive = item.path === '/' 
+                ? currentPath === '/' 
+                : currentPath.startsWith(item.path);
 
               return (
                 <button
                   key={item.id}
                   onClick={() => {
-                    onSelectTab(item.id);
+                    handleNavClick(item.path);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left cursor-pointer ${
                     isActive
                       ? item.isAi
                         ? 'bg-emerald-600 text-white font-bold'
@@ -285,13 +299,15 @@ export default function Navbar({ activeTab, onSelectTab }) {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-1 py-1 flex items-center justify-around shadow-sm">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = item.path === '/' 
+            ? currentPath === '/' 
+            : currentPath.startsWith(item.path);
 
           return (
             <button
               key={item.id}
-              onClick={() => onSelectTab(item.id)}
-              className={`flex flex-col items-center justify-center py-1 px-1 rounded-lg transition-all ${
+              onClick={() => handleNavClick(item.path)}
+              className={`flex flex-col items-center justify-center py-1 px-1 rounded-lg transition-all cursor-pointer ${
                 isActive
                   ? item.isAi
                     ? 'text-emerald-700 font-bold'

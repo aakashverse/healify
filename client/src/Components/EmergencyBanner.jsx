@@ -1,9 +1,19 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle, PhoneCall, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function EmergencyBanner({ onSelectFirstAid }) {
+  const navigate = useNavigate();
   const { t } = useLanguage();
+
+  const handleFirstAidClick = () => {
+    if (onSelectFirstAid) {
+      onSelectFirstAid();
+    } else {
+      navigate('/firstaid');
+    }
+  };
 
   return (
     <div className="bg-rose-950 text-rose-100 px-3 sm:px-4 py-1 text-[11px] sm:text-xs border-b border-rose-900/50">
@@ -26,7 +36,7 @@ export default function EmergencyBanner({ onSelectFirstAid }) {
             <span>108</span>
           </a>
           <button
-            onClick={onSelectFirstAid}
+            onClick={handleFirstAidClick}
             className="inline-flex items-center gap-1 font-semibold text-rose-300 hover:text-white cursor-pointer text-[11px]"
           >
             <span>{t.sosFirstAidBtn}</span>

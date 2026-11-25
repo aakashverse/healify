@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   FolderHeart, 
   Plus, 
@@ -28,7 +29,8 @@ import {
   deleteHealthRecord 
 } from '../services/records.api';
 
-export default function HealthRecordsView({ onSelectTab }) {
+export default function HealthRecordsView() {
+  const navigate = useNavigate();
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const { t, lang } = useLanguage();
 
@@ -458,7 +460,7 @@ export default function HealthRecordsView({ onSelectTab }) {
               {t.recordsAddBtn}
             </button>
             <button
-              onClick={() => onSelectTab && onSelectTab('scanner')}
+              onClick={() => navigate('/scanner')}
               className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs cursor-pointer"
             >
               {lang === 'hi' ? 'पर्ची स्कैन करें' : 'Scan Prescription'}

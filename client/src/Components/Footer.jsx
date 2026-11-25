@@ -1,9 +1,16 @@
 import React from 'react';
-import { HeartPulse, PhoneCall, ShieldCheck, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { HeartPulse, PhoneCall, Heart } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function Footer({ onSelectTab }) {
+export default function Footer() {
+  const navigate = useNavigate();
   const { lang, t } = useLanguage();
+
+  const handleNav = (path) => {
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <footer className="bg-slate-900 text-slate-300 py-8 pb-20 lg:pb-8 border-t border-slate-800 mt-auto text-xs">
@@ -34,32 +41,32 @@ export default function Footer({ onSelectTab }) {
             </h4>
             <ul className="space-y-1.5 text-xs text-slate-400 font-medium">
               <li>
-                <button onClick={() => onSelectTab('home')} className="hover:text-emerald-400 cursor-pointer">
+                <button onClick={() => handleNav('/')} className="hover:text-emerald-400 cursor-pointer">
                   {t.navHome}
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTab('chat')} className="hover:text-emerald-400 text-emerald-400 font-semibold cursor-pointer">
+                <button onClick={() => handleNav('/chat')} className="hover:text-emerald-400 text-emerald-400 font-semibold cursor-pointer">
                   {t.navChat}
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTab('scanner')} className="hover:text-emerald-400 cursor-pointer">
+                <button onClick={() => handleNav('/scanner')} className="hover:text-emerald-400 cursor-pointer">
                   {t.navScanner}
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTab('records')} className="hover:text-emerald-400 cursor-pointer">
+                <button onClick={() => handleNav('/records')} className="hover:text-emerald-400 cursor-pointer">
                   {t.navRecords}
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTab('hospitals')} className="hover:text-emerald-400 cursor-pointer">
+                <button onClick={() => handleNav('/hospitals')} className="hover:text-emerald-400 cursor-pointer">
                   {t.navHospitals}
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTab('firstaid')} className="hover:text-rose-400 text-rose-400 cursor-pointer">
+                <button onClick={() => handleNav('/firstaid')} className="hover:text-rose-400 text-rose-400 cursor-pointer">
                   {t.navFirstAid}
                 </button>
               </li>

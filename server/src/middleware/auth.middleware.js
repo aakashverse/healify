@@ -1,5 +1,5 @@
 import { verifyToken } from "../utils/auth.util.js";
-import { User } from "../models/User.model.js"
+import { MongoUserModel as UserStore } from "../db/mongodb.js";
 
 
 export const requireAuth = async (req, res, next) => {
@@ -22,7 +22,7 @@ export const requireAuth = async (req, res, next) => {
             });
         }
 
-        const user = await User.findById(payload.userId);
+        const user = await UserStore.findById(payload.userId);
         if (!user) {
             return res.status(401).json({
                 status: "error",
@@ -50,7 +50,7 @@ export const optionalAuth = async (req, res, next) => {
             const token = authHeader.split(" ")[1];
             const payload = verifyToken(token);
             if (payload && payload.userId) {
-                const user = await User.findById(payload.userId);
+                const user = await UserStore.findById(payload.userId);
                 if (user) {
                     req.user = user;
                     req.userId = user.id || (user._id ? user._id.toString() : payload.userId);

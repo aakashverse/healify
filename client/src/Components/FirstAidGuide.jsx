@@ -5,8 +5,7 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   XCircle, 
-  Volume2, 
-  ArrowLeft
+  Volume2
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -156,7 +155,7 @@ const PROTOCOLS = [
   }
 ];
 
-export default function FirstAidGuide({ onBack }) {
+export default function FirstAidGuide() {
   const { lang, t } = useLanguage();
   const [selectedProtocol, setSelectedProtocol] = useState(PROTOCOLS[0]);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -189,15 +188,6 @@ export default function FirstAidGuide({ onBack }) {
       {/* Header */}
       <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer shrink-0"
-              title="Back"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          )}
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-rose-600 to-red-600 text-white flex items-center justify-center shadow-md shadow-rose-600/20 shrink-0">
             <ShieldAlert className="w-6 h-6" />
           </div>

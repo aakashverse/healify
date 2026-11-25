@@ -1,4 +1,4 @@
-import { User } from "../models/User.model.js"
+import { MongoUserModel as UserStore } from "../db/mongodb.js";
 import { hashPassword, verifyPassword, generateToken } from "../utils/auth.util.js";
 
 // Helper to safely serialize user object and remove sensitive credentials
@@ -47,7 +47,7 @@ export const register = async (req, res) => {
         }
 
         const normalizedEmail = email.trim().toLowerCase();
-        const existingUser = await User.findOne({email: normalizedEmail});
+        const existingUser = await UserStore.findByEmail(normalizedEmail);
         if (existingUser) {
             return res.status(409).json({
                 status: "error",
@@ -56,7 +56,7 @@ export const register = async (req, res) => {
         }
 
         const passwordHash = await hashPassword(password);
-        const newUser = await User.create({
+        const newUser = await UserStore.create({
             name: name.trim(),
             email: normalizedEmail,
             passwordHash,
@@ -108,7 +108,7 @@ export const login = async (req, res) => {
         }
 
         const normalizedEmail = email.trim().toLowerCase();
-        const user = await User.findByEmail(normalizedEmail);
+        const user = await UserStore.findByEmail(normalizedEmail);
 
         if (!user) {
             return res.status(401).json({
@@ -170,7 +170,7 @@ export const updateProfile = async (req, res) => {
     try {
         const { name, phone, age, gender, blood_group, allergies } = req.body;
 
-        const updated = await User.updateProfile(req.userId, {
+        const updated = await UserStore.updateProfile(req.userId, {
             name: name ? String(name).trim() : undefined,
             phone: phone !== undefined ? String(phone).trim() : undefined,
             age: age !== undefined ? (age ? Number(age) : null) : undefined,

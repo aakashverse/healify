@@ -8,6 +8,22 @@ function getAuthHeaders() {
   };
 }
 
+async function parseProtectedResponse(response, fallbackMessage) {
+  if (response.status === 401) {
+    localStorage.removeItem("healu_token");
+    localStorage.removeItem("healu_user");
+    window.dispatchEvent(new CustomEvent("healu:session-expired"));
+  }
+
+  const data = await response.json();
+  if (!response.ok) {
+    const err = new Error(data.message || `${fallbackMessage} (${response.status})`);
+    err.status = response.status;
+    throw err;
+  }
+  return data;
+}
+
 export async function fetchHealthRecords({ type = "all", search = "" } = {}) {
   try {
     const params = new URLSearchParams();
@@ -20,11 +36,7 @@ export async function fetchHealthRecords({ type = "all", search = "" } = {}) {
       headers: getAuthHeaders()
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Failed to fetch records (${response.status})`);
-    }
-
+    const data = await parseProtectedResponse(response, "Failed to fetch records");
     return data.data || [];
   } catch (error) {
     console.error("fetchHealthRecords error:", error);
@@ -39,11 +51,7 @@ export async function fetchHealthRecordById(id) {
       headers: getAuthHeaders()
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Record not found");
-    }
-
+    const data = await parseProtectedResponse(response, "Record not found");
     return data.data;
   } catch (error) {
     console.error("fetchHealthRecordById error:", error);
@@ -59,11 +67,7 @@ export async function createHealthRecord(recordData) {
       body: JSON.stringify(recordData)
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to create record");
-    }
-
+    const data = await parseProtectedResponse(response, "Failed to create record");
     return data.data;
   } catch (error) {
     console.error("createHealthRecord error:", error);
@@ -79,11 +83,7 @@ export async function updateHealthRecord(id, recordData) {
       body: JSON.stringify(recordData)
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to update record");
-    }
-
+    const data = await parseProtectedResponse(response, "Failed to update record");
     return data.data;
   } catch (error) {
     console.error("updateHealthRecord error:", error);
@@ -98,11 +98,7 @@ export async function deleteHealthRecord(id) {
       headers: getAuthHeaders()
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to delete record");
-    }
-
+    await parseProtectedResponse(response, "Failed to delete record");
     return true;
   } catch (error) {
     console.error("deleteHealthRecord error:", error);
